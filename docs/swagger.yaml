@@ -1,0 +1,15 @@
+info:
+  contact: {}
+paths:
+  /hello:
+    get:
+      description: returns hello
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: hello
+          schema:
+            type: string
+      summary: Hello world
+swagger: "2.0"
