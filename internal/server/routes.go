@@ -3,6 +3,7 @@ package server
 import (
 	"leet-repeat-api/internal/feature/problem"
 	"net/http"
+	"os"
 
 	"github.com/PeterTakahashi/gin-openapi/openapiui"
 	"github.com/gin-contrib/cors"
@@ -19,9 +20,14 @@ func (s *Server) RegisterRoutes() http.Handler {
 		AllowCredentials: true, // Enable cookies/auth
 	}))
 
+	specPath := "./docs/swagger.json"
+	if os.Getenv("APP_ENV") == "production" {
+		specPath = "../../docs/swagger.json"
+	}
+
 	r.GET("/docs/*any", openapiui.WrapHandler(openapiui.Config{
 		SpecURL:      "/docs/openapi.json",
-		SpecFilePath: "./docs/swagger.json",
+		SpecFilePath: specPath,
 		Title:        "Example API",
 		Theme:        "dark",
 	}))
