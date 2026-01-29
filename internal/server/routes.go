@@ -1,6 +1,7 @@
 package server
 
 import (
+	"leet-repeat-api/internal/feature/problem"
 	"net/http"
 
 	"github.com/PeterTakahashi/gin-openapi/openapiui"
@@ -30,6 +31,18 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.GET("/health", s.healthHandler)
 
 	r.GET("/hello", Hello)
+
+	problemRepo := problem.NewProblemRepository(s.db.DB())
+	problemHandler := problem.NewHandler(problemRepo)
+
+	problemGroup := r.Group("/problems")
+	{
+		problemGroup.POST("", problemHandler.Create)
+		problemGroup.GET("", problemHandler.GetAll)
+		problemGroup.GET("/:id", problemHandler.GetByID)
+		problemGroup.PUT("/:id", problemHandler.Update)
+		problemGroup.DELETE("/:id", problemHandler.Delete)
+	}
 
 	return r
 }

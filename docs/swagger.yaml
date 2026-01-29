@@ -1,3 +1,23 @@
+definitions:
+  problem.Difficulty:
+    enum:
+    - 0
+    - 1
+    - 2
+    type: integer
+    x-enum-varnames:
+    - Easy
+    - Medium
+    - Hard
+  problem.Problem:
+    properties:
+      difficulty:
+        $ref: '#/definitions/problem.Difficulty'
+      id:
+        type: integer
+      question:
+        type: string
+    type: object
 info:
   contact: {}
 paths:
@@ -12,4 +32,159 @@ paths:
           schema:
             type: string
       summary: Hello world
+  /problems:
+    get:
+      description: Get all problems from database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/problem.Problem'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all problems
+    post:
+      consumes:
+      - application/json
+      description: Create a new problem with question and difficulty
+      parameters:
+      - description: Problem object
+        in: body
+        name: problem
+        required: true
+        schema:
+          $ref: '#/definitions/problem.Problem'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: integer
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new problem
+  /problems/{id}:
+    delete:
+      description: Delete a problem by ID
+      parameters:
+      - description: Problem ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: integer
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete problem
+    get:
+      description: Get a specific problem by ID
+      parameters:
+      - description: Problem ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/problem.Problem'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get problem by ID
+    put:
+      consumes:
+      - application/json
+      description: Update an existing problem
+      parameters:
+      - description: Problem ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Problem object
+        in: body
+        name: problem
+        required: true
+        schema:
+          $ref: '#/definitions/problem.Problem'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: integer
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update problem
 swagger: "2.0"
