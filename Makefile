@@ -9,6 +9,10 @@ build:
 	
 	@go build -o main.exe cmd/api/main.go
 
+# Generate Swagger documentation
+swagger:
+	@swag init -g cmd/api/main.go -o ./docs
+
 # Run the application
 run:
 	@go run cmd/api/main.go
