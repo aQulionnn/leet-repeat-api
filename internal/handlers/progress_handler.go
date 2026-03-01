@@ -1,12 +1,14 @@
 package handlers
 
 import (
+	"fmt"
 	"leet-repeat-api/internal/database/enums/difficulty"
 	"leet-repeat-api/internal/database/enums/perceived_difficulty"
 	"leet-repeat-api/internal/database/enums/status"
 	"leet-repeat-api/internal/database/models"
 	"leet-repeat-api/internal/database/repositories/progress"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -19,6 +21,12 @@ type ProgressHandler struct {
 func NewProgressHandler(repo progress.ProgressRepository) *ProgressHandler {
 	return &ProgressHandler{repo: repo}
 }
+
+var (
+	cache      = &sync.Map{}
+	cacheTimer *time.Timer
+	timerMu    sync.Mutex
+)
 
 // @Summary Bulk upsert progress
 // @Description Insert or update multiple progress records. Conflicts on (problemQuestionId, problemListName) are resolved by updating the existing record.
@@ -46,6 +54,18 @@ func (h *ProgressHandler) BulkUpsert(c *gin.Context) {
 		return
 	}
 
+	progress, _ := h.repo.GetAll(c.Request.Context())
+	cache.Store("progress", progress)
+
+	timerMu.Lock()
+	if cacheTimer != nil {
+		cacheTimer.Stop()
+	}
+	cacheTimer = time.AfterFunc(15 * time.Minute, func() {
+		cache.Delete("progress")
+	})
+	timerMu.Unlock()
+
 	c.JSON(http.StatusOK, bulkUpsertResponse{
 		Message: "progress list upserted successfully",
 		Count:   count,
@@ -60,6 +80,11 @@ func (h *ProgressHandler) BulkUpsert(c *gin.Context) {
 // @Failure 500 {object} errorResponse
 // @Router /api/progress [get]
 func (h *ProgressHandler) GetAll(c *gin.Context) {
+	if cached, ok := cache.Load("progress"); ok {
+		c.JSON(http.StatusOK, cached)
+		return
+	}
+
 	progressList, err := h.repo.GetAll(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -81,6 +106,10 @@ func (h *ProgressHandler) Clear(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
+	}
+
+	if _, ok := cache.Load("progress"); ok {
+		cache.Clear()
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "progress cleared successfully", "count": count})
