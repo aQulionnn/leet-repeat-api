@@ -50,10 +50,35 @@ func New() Service {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	dbInstance = &service{
 		db: db,
 	}
+
+	if err := dbInstance.migrate(); err != nil {
+		log.Fatal(err)
+	}
+
 	return dbInstance
+}
+
+func (s *service) migrate() error {
+	_, err := s.db.Exec(`
+		CREATE TABLE IF NOT EXISTS progress (
+			id 					 SERIAL PRIMARY KEY,
+			perceived_difficulty INT NOT NULL,
+			last_solved_at_utc   TIMESTAMPTZ,
+			next_review_at_utc   TIMESTAMPTZ,
+			status               INT NOT NULL,
+			problem_question_id  INT NOT NULL,
+			problem_question     TEXT NOT NULL,
+			problem_difficulty   INT NOT NULL,
+			problem_list_name    TEXT NOT NULL,
+			UNIQUE (problem_question_id, problem_list_name)
+		)
+	`)
+
+	return err
 }
 
 // Health checks the health of the database connection by pinging the database.
