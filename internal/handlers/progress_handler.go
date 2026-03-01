@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"leet-repeat-api/internal/database/enums/difficulty"
 	"leet-repeat-api/internal/database/enums/perceived_difficulty"
 	"leet-repeat-api/internal/database/enums/status"
