@@ -15,22 +15,260 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/hello": {
+        "/api/progress": {
             "get": {
-                "description": "returns hello",
+                "description": "Returns all progress records",
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Hello world",
+                "tags": [
+                    "progress"
+                ],
+                "summary": "Get all progress",
                 "responses": {
                     "200": {
-                        "description": "hello",
+                        "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Progress"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.errorResponse"
                         }
                     }
                 }
             }
+        },
+        "/api/progress/bulk-upsert": {
+            "post": {
+                "description": "Insert or update multiple progress records. Conflicts on (problemQuestionId, problemListName) are resolved by updating the existing record.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "progress"
+                ],
+                "summary": "Bulk upsert progress",
+                "parameters": [
+                    {
+                        "description": "List of progress records",
+                        "name": "progressList",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/handlers.bulkUpsertRequest"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.bulkUpsertResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/progress/clear": {
+            "delete": {
+                "description": "Deletes all progress records",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "progress"
+                ],
+                "summary": "Clear all progress",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.clearResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.errorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "difficulty.Difficulty": {
+            "type": "integer",
+            "enum": [
+                0,
+                1,
+                2
+            ],
+            "x-enum-varnames": [
+                "Easy",
+                "Medium",
+                "Hard"
+            ]
+        },
+        "handlers.bulkUpsertRequest": {
+            "type": "object",
+            "properties": {
+                "lastSolvedAtUtc": {
+                    "type": "string",
+                    "example": "2025-01-01T10:00:00Z"
+                },
+                "nextReviewAtUtc": {
+                    "type": "string",
+                    "example": "2025-01-02T10:00:00Z"
+                },
+                "perceivedDifficulty": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "problemDifficulty": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "problemListName": {
+                    "type": "string",
+                    "example": "Arrays"
+                },
+                "problemQuestion": {
+                    "type": "string",
+                    "example": "Two Sum"
+                },
+                "problemQuestionId": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 0
+                }
+            }
+        },
+        "handlers.bulkUpsertResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "message": {
+                    "type": "string",
+                    "example": "progress list upserted successfully"
+                }
+            }
+        },
+        "handlers.clearResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer",
+                    "example": 3
+                },
+                "message": {
+                    "type": "string",
+                    "example": "progress cleared successfully"
+                }
+            }
+        },
+        "handlers.errorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "Invalid request body"
+                }
+            }
+        },
+        "models.Progress": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "last_solved_at_utc": {
+                    "type": "string"
+                },
+                "next_review_at_utc": {
+                    "type": "string"
+                },
+                "perceived_difficulty": {
+                    "$ref": "#/definitions/perceived_difficulty.PerceivedDifficulty"
+                },
+                "problem_difficulty": {
+                    "$ref": "#/definitions/difficulty.Difficulty"
+                },
+                "problem_list_name": {
+                    "type": "string"
+                },
+                "problem_question": {
+                    "type": "string"
+                },
+                "problem_question_id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "$ref": "#/definitions/status.Status"
+                }
+            }
+        },
+        "perceived_difficulty.PerceivedDifficulty": {
+            "type": "integer",
+            "enum": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5
+            ],
+            "x-enum-varnames": [
+                "VeryEasy",
+                "Easy",
+                "Medium",
+                "Hard",
+                "VeryHard",
+                "ExtremelyHard"
+            ]
+        },
+        "status.Status": {
+            "type": "integer",
+            "enum": [
+                0,
+                1,
+                2
+            ],
+            "x-enum-varnames": [
+                "Active",
+                "Mastered",
+                "Paused"
+            ]
         }
     }
 }`

@@ -1,0 +1,129 @@
+package handlers
+
+import (
+	"leet-repeat-api/internal/database/enums/difficulty"
+	"leet-repeat-api/internal/database/enums/perceived_difficulty"
+	"leet-repeat-api/internal/database/enums/status"
+	"leet-repeat-api/internal/database/models"
+	"leet-repeat-api/internal/database/repositories/progress"
+	"net/http"
+	"time"
+
+	"github.com/gin-gonic/gin"
+)
+
+type ProgressHandler struct {
+	repo progress.ProgressRepository
+}
+
+func NewProgressHandler(repo progress.ProgressRepository) *ProgressHandler {
+	return &ProgressHandler{repo: repo}
+}
+
+// @Summary Bulk upsert progress
+// @Description Insert or update multiple progress records. Conflicts on (problemQuestionId, problemListName) are resolved by updating the existing record.
+// @Tags progress
+// @Accept json
+// @Produce json
+// @Param progressList body []bulkUpsertRequest true "List of progress records"
+// @Success 200 {object} bulkUpsertResponse
+// @Failure 400 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Router /api/progress/bulk-upsert [post]
+func (h *ProgressHandler) BulkUpsert(c *gin.Context) {
+	var request []bulkUpsertRequest
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request body"})
+		return
+	}
+
+	progressList := mapToProgressList(request)
+
+	count, err := h.repo.BulkUpsert(c.Request.Context(), &progressList)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, errorResponse{Error: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, bulkUpsertResponse{
+		Message: "progress list upserted successfully",
+		Count:   count,
+	})
+}
+
+// @Summary Get all progress
+// @Description Returns all progress records
+// @Tags progress
+// @Produce json
+// @Success 200 {array} models.Progress
+// @Failure 500 {object} errorResponse
+// @Router /api/progress [get]
+func (h *ProgressHandler) GetAll(c *gin.Context) {
+	progressList, err := h.repo.GetAll(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, progressList)
+}
+
+// @Summary Clear all progress
+// @Description Deletes all progress records
+// @Tags progress
+// @Produce json
+// @Success 200 {object} clearResponse
+// @Failure 500 {object} errorResponse
+// @Router /api/progress/clear [delete]
+func (h *ProgressHandler) Clear(c *gin.Context) {
+	count, err := h.repo.Clear(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "progress cleared successfully", "count": count})
+}
+
+func mapToProgressList(requests []bulkUpsertRequest) []models.Progress {
+	var progressList []models.Progress
+	for _, item := range requests {
+		progressList = append(progressList, models.Progress{
+			PerceivedDifficulty: perceived_difficulty.PerceivedDifficulty(item.PerceivedDifficulty),
+			Status:              status.Status(item.Status),
+			LastSolvedAtUtc:     item.LastSolvedAtUtc,
+			NextReviewAtUtc:     item.NextReviewAtUtc,
+			ProblemQuestionID:   item.ProblemQuestionID,
+			ProblemQuestion:     item.ProblemQuestion,
+			ProblemDifficulty:   difficulty.Difficulty(item.ProblemDifficulty),
+			ProblemListName:     item.ProblemListName,
+		})
+	}
+	return progressList
+}
+
+type bulkUpsertRequest struct {
+	PerceivedDifficulty int        `json:"perceivedDifficulty" example:"0"`
+	Status              int        `json:"status"              example:"0"`
+	LastSolvedAtUtc     *time.Time `json:"lastSolvedAtUtc"     example:"2025-01-01T10:00:00Z"`
+	NextReviewAtUtc     *time.Time `json:"nextReviewAtUtc"     example:"2025-01-02T10:00:00Z"`
+	ProblemQuestionID   int        `json:"problemQuestionId"   example:"1"`
+	ProblemQuestion     string     `json:"problemQuestion"     example:"Two Sum"`
+	ProblemDifficulty   int        `json:"problemDifficulty"   example:"0"`
+	ProblemListName     string     `json:"problemListName"     example:"Arrays"`
+}
+
+type bulkUpsertResponse struct {
+	Message string `json:"message" example:"progress list upserted successfully"`
+	Count   int    `json:"count"   example:"5"`
+}
+
+type clearResponse struct {
+	Message string `json:"message" example:"progress cleared successfully"`
+	Count   int    `json:"count"   example:"3"`
+}
+
+type errorResponse struct {
+	Error string `json:"error" example:"Invalid request body"`
+}

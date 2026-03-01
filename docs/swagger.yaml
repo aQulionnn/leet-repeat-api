@@ -1,15 +1,182 @@
+definitions:
+  difficulty.Difficulty:
+    enum:
+    - 0
+    - 1
+    - 2
+    type: integer
+    x-enum-varnames:
+    - Easy
+    - Medium
+    - Hard
+  handlers.bulkUpsertRequest:
+    properties:
+      lastSolvedAtUtc:
+        example: "2025-01-01T10:00:00Z"
+        type: string
+      nextReviewAtUtc:
+        example: "2025-01-02T10:00:00Z"
+        type: string
+      perceivedDifficulty:
+        example: 0
+        type: integer
+      problemDifficulty:
+        example: 0
+        type: integer
+      problemListName:
+        example: Arrays
+        type: string
+      problemQuestion:
+        example: Two Sum
+        type: string
+      problemQuestionId:
+        example: 1
+        type: integer
+      status:
+        example: 0
+        type: integer
+    type: object
+  handlers.bulkUpsertResponse:
+    properties:
+      count:
+        example: 5
+        type: integer
+      message:
+        example: progress list upserted successfully
+        type: string
+    type: object
+  handlers.clearResponse:
+    properties:
+      count:
+        example: 3
+        type: integer
+      message:
+        example: progress cleared successfully
+        type: string
+    type: object
+  handlers.errorResponse:
+    properties:
+      error:
+        example: Invalid request body
+        type: string
+    type: object
+  models.Progress:
+    properties:
+      id:
+        type: integer
+      last_solved_at_utc:
+        type: string
+      next_review_at_utc:
+        type: string
+      perceived_difficulty:
+        $ref: '#/definitions/perceived_difficulty.PerceivedDifficulty'
+      problem_difficulty:
+        $ref: '#/definitions/difficulty.Difficulty'
+      problem_list_name:
+        type: string
+      problem_question:
+        type: string
+      problem_question_id:
+        type: integer
+      status:
+        $ref: '#/definitions/status.Status'
+    type: object
+  perceived_difficulty.PerceivedDifficulty:
+    enum:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    type: integer
+    x-enum-varnames:
+    - VeryEasy
+    - Easy
+    - Medium
+    - Hard
+    - VeryHard
+    - ExtremelyHard
+  status.Status:
+    enum:
+    - 0
+    - 1
+    - 2
+    type: integer
+    x-enum-varnames:
+    - Active
+    - Mastered
+    - Paused
 info:
   contact: {}
 paths:
-  /hello:
+  /api/progress:
     get:
-      description: returns hello
+      description: Returns all progress records
       produces:
       - application/json
       responses:
         "200":
-          description: hello
+          description: OK
           schema:
-            type: string
-      summary: Hello world
+            items:
+              $ref: '#/definitions/models.Progress'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      summary: Get all progress
+      tags:
+      - progress
+  /api/progress/bulk-upsert:
+    post:
+      consumes:
+      - application/json
+      description: Insert or update multiple progress records. Conflicts on (problemQuestionId,
+        problemListName) are resolved by updating the existing record.
+      parameters:
+      - description: List of progress records
+        in: body
+        name: progressList
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/handlers.bulkUpsertRequest'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.bulkUpsertResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      summary: Bulk upsert progress
+      tags:
+      - progress
+  /api/progress/clear:
+    delete:
+      description: Deletes all progress records
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.clearResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      summary: Clear all progress
+      tags:
+      - progress
 swagger: "2.0"
