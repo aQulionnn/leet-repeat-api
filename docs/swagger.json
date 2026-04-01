@@ -157,6 +157,10 @@
                 "status": {
                     "type": "integer",
                     "example": 0
+                },
+                "username": {
+                    "type": "string",
+                    "example": "john_doe"
                 }
             }
         },
@@ -224,6 +228,9 @@
                 },
                 "status": {
                     "$ref": "#/definitions/status.Status"
+                },
+                "username": {
+                    "type": "string"
                 }
             }
         },
@@ -254,9 +261,9 @@
                 2
             ],
             "x-enum-varnames": [
-                "Active",
+                "Practicing",
                 "Mastered",
-                "Paused"
+                "Frozen"
             ]
         }
     }

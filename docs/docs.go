@@ -168,6 +168,10 @@ const docTemplate = `{
                 "status": {
                     "type": "integer",
                     "example": 0
+                },
+                "username": {
+                    "type": "string",
+                    "example": "john_doe"
                 }
             }
         },
@@ -235,6 +239,9 @@ const docTemplate = `{
                 },
                 "status": {
                     "$ref": "#/definitions/status.Status"
+                },
+                "username": {
+                    "type": "string"
                 }
             }
         },
@@ -265,9 +272,9 @@ const docTemplate = `{
                 2
             ],
             "x-enum-varnames": [
-                "Active",
+                "Practicing",
                 "Mastered",
-                "Paused"
+                "Frozen"
             ]
         }
     }

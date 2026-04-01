@@ -9,12 +9,13 @@ import (
 
 type Progress struct {
 	ID                  int                                      `json:"id"`
-	PerceivedDifficulty perceived_difficulty.PerceivedDifficulty `json:"perceived_difficulty"`
-	Status              status.Status                            `json:"status"`
-	LastSolvedAtUtc     *time.Time                               `json:"last_solved_at_utc"`
-	NextReviewAtUtc     *time.Time                               `json:"next_review_at_utc"`
+	Username            string                                   `json:"username"`
+	ProblemListName     string                                   `json:"problem_list_name"`
 	ProblemQuestionID   int                                      `json:"problem_question_id"`
 	ProblemQuestion     string                                   `json:"problem_question"`
 	ProblemDifficulty   difficulty.Difficulty                    `json:"problem_difficulty"`
-	ProblemListName     string                                   `json:"problem_list_name"`
+	PerceivedDifficulty perceived_difficulty.PerceivedDifficulty `json:"perceived_difficulty"`
+	LastSolvedAtUtc     *time.Time                               `json:"last_solved_at_utc"`
+	NextReviewAtUtc     *time.Time                               `json:"next_review_at_utc"`
+	Status              status.Status                            `json:"status"`
 }

@@ -23,9 +23,9 @@ func (r *progressRepository) BulkUpsert(ctx context.Context, progressList *[]mod
 	}
 
 	query := fmt.Sprintf(`
-		INSERT INTO progress (perceived_difficulty, status, last_solved_at_utc, next_review_at_utc, problem_question_id, problem_question, problem_difficulty, problem_list_name)
+		INSERT INTO progress (perceived_difficulty, status, last_solved_at_utc, next_review_at_utc, problem_question_id, problem_question, problem_difficulty, problem_list_name, username)
 		VALUES %s
-		ON CONFLICT (problem_question_id, problem_list_name) 
+		ON CONFLICT (problem_question_id, problem_list_name, username) 
 		DO UPDATE SET
 			perceived_difficulty = EXCLUDED.perceived_difficulty,
 			status = EXCLUDED.status,
@@ -44,7 +44,7 @@ func (r *progressRepository) BulkUpsert(ctx context.Context, progressList *[]mod
 func (r *progressRepository) GetAll(ctx context.Context) ([]models.Progress, error) {
 	query := `
 		SELECT 
-			id, perceived_difficulty, status, last_solved_at_utc, next_review_at_utc, problem_question_id, problem_question, problem_difficulty, problem_list_name 
+			id, perceived_difficulty, status, last_solved_at_utc, next_review_at_utc, problem_question_id, problem_question, problem_difficulty, problem_list_name, username 
 		FROM progress
 	`
 

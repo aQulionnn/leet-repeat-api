@@ -126,6 +126,7 @@ func mapToProgressList(requests []bulkUpsertRequest) []models.Progress {
 			ProblemQuestion:     item.ProblemQuestion,
 			ProblemDifficulty:   difficulty.Difficulty(item.ProblemDifficulty),
 			ProblemListName:     item.ProblemListName,
+			Username:            item.Username,
 		})
 	}
 	return progressList
@@ -133,6 +134,7 @@ func mapToProgressList(requests []bulkUpsertRequest) []models.Progress {
 
 type bulkUpsertRequest struct {
 	PerceivedDifficulty int        `json:"perceivedDifficulty" example:"0"`
+	Username            string     `json:"username"            example:"john_doe"`
 	Status              int        `json:"status"              example:"0"`
 	LastSolvedAtUtc     *time.Time `json:"lastSolvedAtUtc"     example:"2025-01-01T10:00:00Z"`
 	NextReviewAtUtc     *time.Time `json:"nextReviewAtUtc"     example:"2025-01-02T10:00:00Z"`
