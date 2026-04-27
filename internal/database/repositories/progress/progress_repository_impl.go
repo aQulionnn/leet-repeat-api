@@ -12,14 +12,14 @@ func (r *progressRepository) BulkUpsert(ctx context.Context, progressList *[]mod
 		return 0, nil
 	}
 
-	cols := 8
+	cols := 9
 	placeholders := make([]string, len(*progressList))
 	args := make([]interface{}, 0, len(*progressList)*cols)
 
 	for i, p := range *progressList {
 		base := i * cols
-		placeholders[i] = fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d)", base+1, base+2, base+3, base+4, base+5, base+6, base+7, base+8)
-		args = append(args, p.PerceivedDifficulty, p.Status, p.LastSolvedAtUtc, p.NextReviewAtUtc, p.ProblemQuestionID, p.ProblemQuestion, p.ProblemDifficulty, p.ProblemListName)
+		placeholders[i] = fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d)", base+1, base+2, base+3, base+4, base+5, base+6, base+7, base+8, base+9)
+		args = append(args, p.PerceivedDifficulty, p.Status, p.LastSolvedAtUtc, p.NextReviewAtUtc, p.ProblemQuestionID, p.ProblemQuestion, p.ProblemDifficulty, p.ProblemListName, p.Username)
 	}
 
 	query := fmt.Sprintf(`
@@ -73,7 +73,7 @@ func (r *progressRepository) GetAll(ctx context.Context) ([]models.Progress, err
 
 func (r *progressRepository) Clear(ctx context.Context) (int, error) {
 	query := `DELETE FROM progress`
-	
+
 	result, err := r.db.ExecContext(ctx, query)
 	if err != nil {
 		return 0, fmt.Errorf("failed to clear progress: %w", err)
