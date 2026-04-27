@@ -58,7 +58,7 @@ func (r *progressRepository) GetAll(ctx context.Context) ([]models.Progress, err
 	var progressList []models.Progress
 	for rows.Next() {
 		var p models.Progress
-		if err := rows.Scan(&p.ID, &p.PerceivedDifficulty, &p.Status, &p.LastSolvedAtUtc, &p.NextReviewAtUtc, &p.ProblemQuestionID, &p.ProblemQuestion, &p.ProblemDifficulty, &p.ProblemListName); err != nil {
+		if err := rows.Scan(&p.ID, &p.PerceivedDifficulty, &p.Status, &p.LastSolvedAtUtc, &p.NextReviewAtUtc, &p.ProblemQuestionID, &p.ProblemQuestion, &p.ProblemDifficulty, &p.ProblemListName, &p.Username); err != nil {
 			return nil, fmt.Errorf("failed to scan progress: %w", err)
 		}
 		progressList = append(progressList, p)
