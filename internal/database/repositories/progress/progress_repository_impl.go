@@ -85,7 +85,7 @@ func (r *progressRepository) GetAll(ctx context.Context, username string) ([]mod
 		WHERE ($1 = '' OR username = $1)
 	`
 
-	rows, err := r.db.QueryContext(ctx, query)
+	rows, err := r.db.QueryContext(ctx, query, username)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get all progressList: %w", err)
 	}
