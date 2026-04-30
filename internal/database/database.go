@@ -77,6 +77,14 @@ func (s *service) migrate() error {
 			status               INT NOT NULL,
 			UNIQUE (username, problem_list_name, problem_question_id)
 		);
+
+		CREATE TABLE IF NOT EXISTS progress_event (
+    		id 					 SERIAL PRIMARY KEY,
+			progress_id 		 INTEGER NOT NULL REFERENCES progress(id) ON DELETE CASCADE,
+			perceived_difficulty INTEGER NOT NULL,
+			solved_at_utc 		 TIMESTAMPTZ NOT NULL,
+			UNIQUE (progress_id, solved_at_utc)
+		);
 	`)
 
 	return err

@@ -117,6 +117,14 @@ func (h *ProgressHandler) Clear(c *gin.Context) {
 func mapToProgressList(requests []bulkUpsertRequest) []models.Progress {
 	var progressList []models.Progress
 	for _, item := range requests {
+		events := make([]models.ProgressEvent, len(item.Events))
+		for i, e := range item.Events {
+			events[i] = models.ProgressEvent{
+				PerceivedDifficulty: e.PerceivedDifficulty,
+				SolvedAtUtc:         e.SolvedAtUtc,
+			}
+		}
+
 		progressList = append(progressList, models.Progress{
 			PerceivedDifficulty: perceived_difficulty.PerceivedDifficulty(item.PerceivedDifficulty),
 			Status:              status.Status(item.Status),
@@ -127,21 +135,28 @@ func mapToProgressList(requests []bulkUpsertRequest) []models.Progress {
 			ProblemDifficulty:   difficulty.Difficulty(item.ProblemDifficulty),
 			ProblemListName:     item.ProblemListName,
 			Username:            item.Username,
+			Events:              events,
 		})
 	}
 	return progressList
 }
 
 type bulkUpsertRequest struct {
+	PerceivedDifficulty int                      `json:"perceivedDifficulty" example:"0"`
+	Username            string                   `json:"username"            example:"john_doe"`
+	Status              int                      `json:"status"              example:"0"`
+	LastSolvedAtUtc     *time.Time               `json:"lastSolvedAtUtc"     example:"2025-01-01T10:00:00Z"`
+	NextReviewAtUtc     *time.Time               `json:"nextReviewAtUtc"     example:"2025-01-02T10:00:00Z"`
+	ProblemQuestionID   int                      `json:"problemQuestionId"   example:"1"`
+	ProblemQuestion     string                   `json:"problemQuestion"     example:"Two Sum"`
+	ProblemDifficulty   int                      `json:"problemDifficulty"   example:"0"`
+	ProblemListName     string                   `json:"problemListName"     example:"Arrays"`
+	Events              []bulkUpsertRequestEvent `json:"events"`
+}
+
+type bulkUpsertRequestEvent struct {
 	PerceivedDifficulty int        `json:"perceivedDifficulty" example:"0"`
-	Username            string     `json:"username"            example:"john_doe"`
-	Status              int        `json:"status"              example:"0"`
-	LastSolvedAtUtc     *time.Time `json:"lastSolvedAtUtc"     example:"2025-01-01T10:00:00Z"`
-	NextReviewAtUtc     *time.Time `json:"nextReviewAtUtc"     example:"2025-01-02T10:00:00Z"`
-	ProblemQuestionID   int        `json:"problemQuestionId"   example:"1"`
-	ProblemQuestion     string     `json:"problemQuestion"     example:"Two Sum"`
-	ProblemDifficulty   int        `json:"problemDifficulty"   example:"0"`
-	ProblemListName     string     `json:"problemListName"     example:"Arrays"`
+	SolvedAtUtc         *time.Time `json:"solvedAtUtc"         example:"2025-01-01T10:00:00Z"`
 }
 
 type bulkUpsertResponse struct {

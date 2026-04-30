@@ -18,4 +18,11 @@ type Progress struct {
 	LastSolvedAtUtc     *time.Time                               `json:"last_solved_at_utc"`
 	NextReviewAtUtc     *time.Time                               `json:"next_review_at_utc"`
 	Status              status.Status                            `json:"status"`
+	Events              []ProgressEvent                          `json:"events"`
+}
+
+type ProgressEvent struct {
+	ID                  int        `json:"id"`
+	PerceivedDifficulty int        `json:"perceived_difficulty"`
+	SolvedAtUtc         *time.Time `json:"solved_at_utc"`
 }
