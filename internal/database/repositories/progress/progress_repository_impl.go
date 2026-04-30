@@ -77,11 +77,12 @@ func (r *progressRepository) BulkUpsert(ctx context.Context, progressList *[]mod
 	return len(*progressList), nil
 }
 
-func (r *progressRepository) GetAll(ctx context.Context) ([]models.Progress, error) {
+func (r *progressRepository) GetAll(ctx context.Context, username string) ([]models.Progress, error) {
 	query := `
 		SELECT id, perceived_difficulty, status, last_solved_at_utc, next_review_at_utc, 
 		       problem_question_id, problem_question, problem_difficulty, problem_list_name, username 
 		FROM progress
+		WHERE ($1 = '' OR username = $1)
 	`
 
 	rows, err := r.db.QueryContext(ctx, query)

@@ -8,7 +8,7 @@ import (
 
 type ProgressRepository interface {
 	BulkUpsert(ctx context.Context, progressList *[]models.Progress) (int, error)
-	GetAll(ctx context.Context) ([]models.Progress, error)
+	GetAll(ctx context.Context, username string) ([]models.Progress, error)
 	Clear(ctx context.Context) (int, error)
 }
 

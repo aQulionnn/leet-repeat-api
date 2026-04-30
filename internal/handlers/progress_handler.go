@@ -53,15 +53,20 @@ func (h *ProgressHandler) BulkUpsert(c *gin.Context) {
 		return
 	}
 
-	progress, _ := h.repo.GetAll(c.Request.Context())
-	cache.Store("progress", progress)
+	if len(request) > 0 {
+		cacheKey := "progress:" + request[0].Username
+		cache.Delete(cacheKey)
+	}
 
 	timerMu.Lock()
 	if cacheTimer != nil {
 		cacheTimer.Stop()
 	}
-	cacheTimer = time.AfterFunc(15 * time.Minute, func() {
-		cache.Delete("progress")
+	cacheTimer = time.AfterFunc(15*time.Minute, func() {
+		cache.Range(func(key, _ any) bool {
+			cache.Delete(key)
+			return true
+		})
 	})
 	timerMu.Unlock()
 
@@ -79,17 +84,21 @@ func (h *ProgressHandler) BulkUpsert(c *gin.Context) {
 // @Failure 500 {object} errorResponse
 // @Router /api/progress [get]
 func (h *ProgressHandler) GetAll(c *gin.Context) {
-	if cached, ok := cache.Load("progress"); ok {
+	username := c.Query("username")
+
+	cacheKey := "progress:" + username
+	if cached, ok := cache.Load(cacheKey); ok {
 		c.JSON(http.StatusOK, cached)
 		return
 	}
 
-	progressList, err := h.repo.GetAll(c.Request.Context())
+	progressList, err := h.repo.GetAll(c.Request.Context(), username)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
+	cache.Store(cacheKey, progressList)
 	c.JSON(http.StatusOK, progressList)
 }
 
