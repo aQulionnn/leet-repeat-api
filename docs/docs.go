@@ -17,7 +17,7 @@ const docTemplate = `{
     "paths": {
         "/api/progress": {
             "get": {
-                "description": "Returns all progress records",
+                "description": "Returns all progress records filtered by username",
                 "produces": [
                     "application/json"
                 ],
@@ -25,6 +25,14 @@ const docTemplate = `{
                     "progress"
                 ],
                 "summary": "Get all progress",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter by username",
+                        "name": "username",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -137,6 +145,12 @@ const docTemplate = `{
         "handlers.bulkUpsertRequest": {
             "type": "object",
             "properties": {
+                "events": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/handlers.bulkUpsertRequestEvent"
+                    }
+                },
                 "lastSolvedAtUtc": {
                     "type": "string",
                     "example": "2025-01-01T10:00:00Z"
@@ -172,6 +186,19 @@ const docTemplate = `{
                 "username": {
                     "type": "string",
                     "example": "john_doe"
+                }
+            }
+        },
+        "handlers.bulkUpsertRequestEvent": {
+            "type": "object",
+            "properties": {
+                "perceivedDifficulty": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "solvedAtUtc": {
+                    "type": "string",
+                    "example": "2025-01-01T10:00:00Z"
                 }
             }
         },
@@ -213,6 +240,12 @@ const docTemplate = `{
         "models.Progress": {
             "type": "object",
             "properties": {
+                "events": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ProgressEvent"
+                    }
+                },
                 "id": {
                     "type": "integer"
                 },
@@ -241,6 +274,20 @@ const docTemplate = `{
                     "$ref": "#/definitions/status.Status"
                 },
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ProgressEvent": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "perceived_difficulty": {
+                    "type": "integer"
+                },
+                "solved_at_utc": {
                     "type": "string"
                 }
             }

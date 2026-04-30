@@ -77,9 +77,10 @@ func (h *ProgressHandler) BulkUpsert(c *gin.Context) {
 }
 
 // @Summary Get all progress
-// @Description Returns all progress records
+// @Description Returns all progress records filtered by username
 // @Tags progress
 // @Produce json
+// @Param username query string false "Filter by username"
 // @Success 200 {array} models.Progress
 // @Failure 500 {object} errorResponse
 // @Router /api/progress [get]
